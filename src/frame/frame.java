@@ -1,6 +1,7 @@
 package frame;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.TextArea;
@@ -13,6 +14,7 @@ import javax.swing.table.TableModel;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -43,6 +45,23 @@ import java.awt.Font;
 import javax.swing.JList;
 import javax.swing.JTable;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.time.Day;
+import org.jfree.data.time.Hour;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.Minute;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYDataset;
+
 public class frame extends JFrame {
 
 	private JPanel contentPane;
@@ -54,10 +73,14 @@ public class frame extends JFrame {
 	private JTextField textField_5;
 	private JTable table;
 	private JTable table_1;
+	private TimeSeriesCollection dataset=new TimeSeriesCollection();
+	private final TimeSeries timeSeries = new TimeSeries("数据折线图", Millisecond.class);   ;
 
 	/**
 	 * Launch the application.
 	 */
+    
+   
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -70,13 +93,38 @@ public class frame extends JFrame {
 			}
 		});
 	}
-
+	public  void setXYPolt(XYPlot plot) {  
+        plot.setDomainGridlinePaint(Color.LIGHT_GRAY);  
+        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);  
+        // plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));  
+        XYItemRenderer r = plot.getRenderer();  
+        if (r instanceof XYLineAndShapeRenderer) {  
+            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;  
+            renderer.setBaseShapesVisible(true);  
+            renderer.setBaseShapesFilled(false);  
+        }  
+	}
+	
+	
+	
+    private JFreeChart createChart(XYDataset dataset) {  
+        JFreeChart result = ChartFactory.createTimeSeriesChart("Swing动态折线图", "系统当前时间",  
+                "动态数值变化", dataset, true, true, false);  
+        XYPlot plot = (XYPlot) result.getPlot();  
+        ValueAxis axis = plot.getDomainAxis();  
+        axis.setAutoRange(true);  
+        axis.setFixedAutoRange(60000.0);  
+        axis = plot.getRangeAxis();  
+        axis.setRange(0.0, 200.0);  
+        return result;  
+    }  
+	
 	/**
 	 * Create the frame.
 	 */
 	public frame() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 922, 640);
+		setBounds(100, 100, 983, 715);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -84,72 +132,71 @@ public class frame extends JFrame {
 		
 		JLabel lblNewLabel = new JLabel("端口号");
 		lblNewLabel.setFont(new Font("宋体", Font.PLAIN, 22));
-		lblNewLabel.setBounds(154, 51, 71, 46);
+		lblNewLabel.setBounds(150, 51, 71, 46);
 		contentPane.add(lblNewLabel);
 		
 		textField = new JTextField();
 		textField.setHorizontalAlignment(SwingConstants.CENTER);
 		textField.setFont(new Font("宋体", Font.PLAIN, 25));
-		textField.setBounds(118, 96, 131, 46);
+		textField.setBounds(120, 97, 132, 46);
 		contentPane.add(textField);
 		textField.setColumns(10);
 		this.setResizable(true); //设置窗口大小是否可变
 		ImageIcon icon = new ImageIcon("src/image/timg.jpg");
 				//new ImageIcon(this.getClass().getResource("Resources/timg.jpg"));
 		this.setIconImage(icon.getImage());
-		//scrollPane.setViewportView(textArea);
 
-		
-	    final JTextArea textArea = new JTextArea();
-	    textArea.setFont(new Font("Monospaced", Font.PLAIN, 21));
+		JScrollPane scrollPane = new JScrollPane();
 
-		JScrollPane scrollPane = new JScrollPane(textArea);
-
-		scrollPane.setBounds(248, 142, 607, 427);
+		scrollPane.setBounds(250, 142, 703, 501);
 		contentPane.add(scrollPane);
 		scrollPane.setHorizontalScrollBarPolicy(
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setVerticalScrollBarPolicy(
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		
-	//scrollPane.setViewportView(textArea);
+ 
+        ChartPanel panel = new ChartPanel(createChart(dataset)
+        		); 
+		scrollPane.setViewportView(panel);
+		
 		
 		
 	
-		
-		final JButton btnNewButton = new JButton("连接");
+		final JButton btnNewButton_4 = new JButton("运行");
+		btnNewButton_4.setFont(new Font("宋体", Font.PLAIN, 22));
+		btnNewButton_4.setBounds(16, 95, 104, 46);
+		contentPane.add(btnNewButton_4);
 		
 		  final long threadid;
 		//final Thread current;
-		btnNewButton.addActionListener(new ActionListener() {
+		btnNewButton_4.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new Thread(new Runnable() {
 					
 					@Override
 					public void run() {
-						//System.out.println(Thread.currentThread().getId());
 					if(textField.getText().trim().equals(""))
 					{
-						textArea.append("请输入端口号\n");
+					//	textArea.append("请输入端口号\n");
 					}else {
 						
 					
-			 btnNewButton.setEnabled(false);
+			 btnNewButton_4.setEnabled(false);
 			 int prot=Integer.parseInt(textField.getText());
 			  
 			
-					  textArea.setText("-----欢迎使用DTU服务端程序 V1.1-----\n");	
 					
 			
 
 					Receiver receiver;
 					try {
 						receiver = new Receiver(prot);
-						textArea.append("打开端口成功，等待数据...\n");
-						receiver.receive(textArea,table_1,textField_5);
+						//textArea.append("打开端口成功，等待数据...\n");
+						receiver.receive(dataset,timeSeries,table_1,textField_5);
 					} catch (IOException e1) {
 						e1.printStackTrace();
-						textArea.append("端口被占用\n");
+						//textArea.append("端口被占用\n");
 					}
 					
 				
@@ -164,15 +211,12 @@ public class frame extends JFrame {
 			}
 		});
 		
-		btnNewButton.setBounds(16, 22, 103, 29);
-		contentPane.add(btnNewButton);
-		
 	
 		JButton btnNewButton_1 = new JButton("断开");
 		btnNewButton_1.setFont(new Font("宋体", Font.PLAIN, 22));
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				btnNewButton.setEnabled(true);
+				btnNewButton_4.setEnabled(true);
 				
 				//textField.setText("");
 				//Thread thread1=findThread(18);
@@ -180,29 +224,27 @@ public class frame extends JFrame {
 				
 			}
 		});
-		btnNewButton_1.setBounds(753, 95, 103, 46);
+		btnNewButton_1.setBounds(849, 96, 103, 46);
 		contentPane.add(btnNewButton_1);
 		
 		JButton btnNewButton_2 = new JButton("日志");
 		btnNewButton_2.setFont(new Font("宋体", Font.PLAIN, 22));
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//File f=new File("F://1.txt");
-				//创建文件夹选择器，选择文件路径
+			
 				JFileChooser jf = new JFileChooser();  
 				jf.setFileSelectionMode(JFileChooser.SAVE_DIALOG | JFileChooser.DIRECTORIES_ONLY);  
 				jf.showDialog(null,null);  
 				File fi = jf.getSelectedFile();  
 				String file = fi.getAbsolutePath()+"\\text.txt"; 
-           //将textarea里文本以每行一对一的方式写进txt文件中去
 				BufferedWriter bw = null;
                 try {
                     OutputStream os = new FileOutputStream(file);
                     bw = new BufferedWriter(new OutputStreamWriter(os));
-                    for (String value : textArea.getText().split("\n")) {
-                        bw.write(value);
-                        bw.newLine();//换行
-                    }
+//                    for (String value : textArea.getText().split("\n")) {
+//                        bw.write(value);
+//                        bw.newLine();//换行
+//                    }
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 } finally {
@@ -218,64 +260,61 @@ public class frame extends JFrame {
 				   
 			}
 		});
-		btnNewButton_2.setBounds(753, 50, 103, 46);
+		btnNewButton_2.setBounds(850, 51, 101, 46);
 		contentPane.add(btnNewButton_2);
 		
 		JButton btnNewButton_3 = new JButton("设置");
 		btnNewButton_3.setFont(new Font("宋体", Font.PLAIN, 22));
-		btnNewButton_3.setBounds(16, 49, 103, 46);
+		btnNewButton_3.setBounds(16, 49, 104, 46);
 		contentPane.add(btnNewButton_3);
 		
-		JButton btnNewButton_4 = new JButton("运行");
-		btnNewButton_4.setFont(new Font("宋体", Font.PLAIN, 22));
-		btnNewButton_4.setBounds(16, 95, 103, 46);
-		contentPane.add(btnNewButton_4);
+		
 		
 		JLabel lblNewLabel_1 = new JLabel("报警上限");
 		lblNewLabel_1.setFont(new Font("宋体", Font.PLAIN, 22));
-		lblNewLabel_1.setBounds(268, 51, 108, 46);
+		lblNewLabel_1.setBounds(278, 51, 108, 46);
 		contentPane.add(lblNewLabel_1);
 		
 		textField_1 = new JTextField();
 		textField_1.setHorizontalAlignment(SwingConstants.CENTER);
 		textField_1.setFont(new Font("宋体", Font.PLAIN, 25));
-		textField_1.setBounds(245, 96, 131, 46);
+		textField_1.setBounds(251, 97, 166, 46);
 		contentPane.add(textField_1);
 		textField_1.setColumns(10);
 		
 		JLabel lblNewLabel_2 = new JLabel("报警下限");
 		lblNewLabel_2.setFont(new Font("宋体", Font.PLAIN, 22));
-		lblNewLabel_2.setBounds(401, 51, 100, 46);
+		lblNewLabel_2.setBounds(443, 51, 100, 46);
 		contentPane.add(lblNewLabel_2);
 		
 		textField_2 = new JTextField();
 		textField_2.setHorizontalAlignment(SwingConstants.CENTER);
 		textField_2.setFont(new Font("宋体", Font.PLAIN, 25));
-		textField_2.setBounds(370, 96, 131, 46);
+		textField_2.setBounds(415, 97, 153, 46);
 		contentPane.add(textField_2);
 		textField_2.setColumns(10);
 		
 		JLabel lblNewLabel_3 = new JLabel("测量参数");
 		lblNewLabel_3.setFont(new Font("宋体", Font.PLAIN, 22));
-		lblNewLabel_3.setBounds(528, 51, 95, 46);
+		lblNewLabel_3.setBounds(589, 51, 95, 46);
 		contentPane.add(lblNewLabel_3);
 		
 		textField_3 = new JTextField();
 		textField_3.setHorizontalAlignment(SwingConstants.CENTER);
 		textField_3.setFont(new Font("宋体", Font.PLAIN, 25));
-		textField_3.setBounds(492, 96, 131, 46);
+		textField_3.setBounds(560, 97, 148, 46);
 		contentPane.add(textField_3);
 		textField_3.setColumns(10);
 		
 		JLabel lblNewLabel_4 = new JLabel("测量地址");
 		lblNewLabel_4.setFont(new Font("宋体", Font.PLAIN, 22));
-		lblNewLabel_4.setBounds(650, 51,88, 46);
+		lblNewLabel_4.setBounds(734, 51,88, 46);
 		contentPane.add(lblNewLabel_4);
 		
 		textField_4 = new JTextField();
 		textField_4.setHorizontalAlignment(SwingConstants.CENTER);
 		textField_4.setFont(new Font("宋体", Font.PLAIN, 25));
-		textField_4.setBounds(623, 96, 131, 46);
+		textField_4.setBounds(705, 97, 148, 46);
 		contentPane.add(textField_4);
 		textField_4.setColumns(10);
 		
@@ -292,7 +331,7 @@ public class frame extends JFrame {
 		textField_5 = new JTextField();
 		textField_5.setHorizontalAlignment(SwingConstants.CENTER);
 		textField_5.setFont(new Font("宋体", Font.PLAIN, 25));
-		textField_5.setBounds(15, 221, 233, 62);
+		textField_5.setBounds(15, 221, 235, 62);
 		contentPane.add(textField_5);
 		textField_5.setColumns(10);
 		
@@ -304,35 +343,17 @@ public class frame extends JFrame {
 		table_1 = new JTable();
 		table_1.setEnabled(false);
 		table_1.setFont(new Font("宋体", Font.PLAIN, 22));
-//		table_1.setBounds(16, 358, 225, 211);
-	//	table_1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		table_1.setShowHorizontalLines(true);
-//		table_1.setShowVerticalLines(true);
-		table_1.setRowHeight(30);
-		//table.setModel(tableModel);
-		//table.setCellSelectionEnabled(false);
 
-		//tableModel.isCellEditable(row, column)
-		//table.setColumnSelectionAllowed(false);
-		//tableModel.
-//		Vector vRow1 = new Vector();
-//		vRow1.add("cell 2 0");
-//		vRow1.add("cell 2 1");
-//		vData.add(vRow1);
-//		tableModel = new DefaultTableModel(vData, vName);
-		
-		//table_1 = new JTable();
-		
-	//	contentPane.add(table);
-		
+		table_1.setShowHorizontalLines(true);
+		table_1.setRowHeight(30);
+
 		JScrollPane scrollPane_1 = new JScrollPane(table_1);
-		scrollPane_1.setBounds(16, 358, 225, 211);
+		scrollPane_1.setBounds(16, 358, 234, 285);
 		scrollPane_1.setHorizontalScrollBarPolicy(
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane_1.setVerticalScrollBarPolicy(
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		
-		//scrollPane_1.setViewportView(table_1);
 		contentPane.add(scrollPane_1);
 		
 		

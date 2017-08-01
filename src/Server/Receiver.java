@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
 import java.util.Vector;
@@ -13,6 +14,14 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+
+import org.jfree.data.time.Day;
+import org.jfree.data.time.Hour;
+import org.jfree.data.time.Millisecond;
+import org.jfree.data.time.Minute;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 
 public class Receiver {
 
@@ -28,9 +37,9 @@ public class Receiver {
    {
 	   serverSocket.close();
    }
-	public void receive(JTextArea area,JTable jTable,JTextField jTextField) throws IOException {
-
-		
+	public void receive(TimeSeriesCollection dataset,TimeSeries timeSeries,JTable jTable,JTextField jTextField) throws IOException {
+         
+        //TimeSeries timeSeries = new TimeSeries("不良笑花", Minute.class);  
 		Vector vData = new Vector();
 		Vector vName = new Vector();
 		Vector vRow;
@@ -38,6 +47,12 @@ public class Receiver {
 		vName.add("column1");
 		vName.add("column2");
 		Socket socket = serverSocket.accept();
+		double value;
+		//SimpleDateFormat sdf;
+		Calendar calendar;		  
+		Date date;
+		Boolean flag=true;
+	  
 
 		try (DataInputStream dis = new DataInputStream(socket.getInputStream())) {
 			while (true) {
@@ -46,19 +61,31 @@ public class Receiver {
 
 				if (size > 0) {
 					Date now = new Date();
-					//SimpleDateFormat sFormat = new SimpleDateFormat("yy/MM/dd HH:mm:ss");
+					
+				
 
 					SimpleDateFormat sFormat = new SimpleDateFormat("HH:mm:ss");
-					String getDate =sFormat.format(now) + "收到数据...\n";
-					area.append(getDate);
+				//	String getDate =sFormat.format(now) + "收到数据...\n";
+				//	area.append(getDate);
 
 					try {
 						String str = new String(bytes, "GBK");
 						String str2 = new String(bytes, "GB18030");
 
-					    area.append("使用GBK解析    :" + str.trim()+"\n");
-					
-					    area.append("使用GB18030解析:" + str2.trim()+"\n");
+			
+						value=Double.valueOf(str.trim());
+						timeSeries.add(new Millisecond(),value);
+						
+						if(flag)
+						{
+					       dataset.addSeries(timeSeries);
+					       flag=false;
+						}
+					       try {  
+				                Thread.currentThread().sleep(100);  
+				            } catch (InterruptedException e) {  
+				                e.printStackTrace();  
+				            }  
 					    vRow = new Vector();
 					    vRow.add(sFormat.format(now));
 						vRow.add(str.trim());
@@ -70,10 +97,10 @@ public class Receiver {
 					} catch (Exception e) {
 						e.printStackTrace();
 					
-						area.append("解析失败...");
+					//	area.append("解析失败...");
 					}
 					
-					area.append("-----------------\n");
+				//	area.append("-----------------\n");
 				}
 
 
